@@ -68,5 +68,5 @@ jobs:
     with:
       build-id: ${{ github.run_id }}.${{ github.run_number }}.${{ github.run_attempt }}
       environment: ${{ inputs.environment }}
-      project_veracode: ${{ inputs.project_veracode }}
+      project_veracode: ${{ inputs.project }}
       veracode_policy_name: ${{ inputs.veracode_policy_name }}
