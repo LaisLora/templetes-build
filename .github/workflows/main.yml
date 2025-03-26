@@ -3,10 +3,6 @@ name: Build
 on:
   workflow_call:
     inputs:
-      project-path:
-        description: 'Caminho do projeto'
-        required: true
-        type: string
       project_veracode:
         description: 'Project do Veracode'
         required: true
