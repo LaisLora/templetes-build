@@ -3,7 +3,7 @@ name: Build
 on:
   workflow_call:
     inputs:
-      project_veracode:
+      project:
         description: 'Project do Veracode'
         required: true
         type: string
@@ -17,7 +17,7 @@ on:
         type: string
 
 env:
-  PROJECT: ${{ inputs.project_veracode }}
+  PROJECT: ${{ inputs.project }}
   ENVIRONMENT: ${{ inputs.environment }}
 
 jobs:
