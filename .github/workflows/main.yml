@@ -63,7 +63,7 @@ jobs:
   Veracode:
     name: Veracode
     needs: build
-    uses: github-actions-templates/.github/workflows/veracode-template.yml@main
+    uses: LaisLora/github-actions-templates/.github/workflows/veracode-template.yml@main
     secrets: inherit
     with:
       build-id: ${{ github.run_id }}.${{ github.run_number }}.${{ github.run_attempt }}
