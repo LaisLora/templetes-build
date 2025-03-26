@@ -1,0 +1,76 @@
+name: Build
+
+on:
+  workflow_call:
+    inputs:
+      project-path:
+        description: 'Caminho do projeto'
+        required: true
+        type: string
+      project_veracode:
+        description: 'Project do Veracode'
+        required: true
+        type: string
+      environment:
+        description: 'Ambiente'
+        required: true
+        type: string
+      veracode_policy_name:
+        description: 'Policy do Veracode'
+        required: true
+        type: string
+
+env:
+  PROJECT: ${{ inputs.project_veracode }}
+  ENVIRONMENT: ${{ inputs.environment }}
+
+jobs:
+  build:
+    name: AutoPack
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Checkout Código
+        uses: actions/checkout@v4
+
+      - name: Detectar Projeto Java-Maven
+        id: check_maven
+        run: |
+          if [ -f "pom.xml" ]; then
+            echo "java_maven=true" >> $GITHUB_OUTPUT
+          else
+            echo "java_maven=false" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Detectar versão do Java no pom.xml
+        if: ${{ steps.check_maven.outputs.java_maven == 'true' }}
+        id: detect_java
+        run: |
+          JAVA_VERSION=$(grep -oPm1 "(?<=<maven.compiler.source>)[^<]+" pom.xml || echo "11")
+          if [[ "$JAVA_VERSION" == "11" ]]; then
+            JAVA_VERSION=$(grep -oPm1 "(?<=<java.version>)[^<]+" pom.xml || echo "11")
+          fi
+          echo "Versão do Java detectada: $JAVA_VERSION"
+          echo "java_version=$JAVA_VERSION" >> $GITHUB_OUTPUT
+
+      - name: Configurar JDK e Maven
+        if: ${{ steps.check_maven.outputs.java_maven == 'true' }}
+        uses: actions/setup-java@v3
+        with:
+          java-version: ${{ steps.detect_java.outputs.java_version }}
+          distribution: 'temurin'
+          cache: maven
+
+      - name: Compilar Projeto Maven
+        if: ${{ steps.check_maven.outputs.java_maven == 'true' }}
+        run: mvn clean package
+
+  Veracode:
+    name: Veracode
+    needs: build
+    uses: github-actions-templates/.github/workflows/veracode-template.yml@main
+    secrets: inherit
+    with:
+      build-id: ${{ github.run_id }}.${{ github.run_number }}.${{ github.run_attempt }}
+      environment: ${{ inputs.environment }}
+      project_veracode: ${{ inputs.project_veracode }}
+      veracode_policy_name: ${{ inputs.veracode_policy_name }}
